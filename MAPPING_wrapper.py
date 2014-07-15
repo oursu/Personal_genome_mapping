@@ -11,10 +11,9 @@ Call the pipeline steps for each sample in the dataset.
 def main():
     parser=OptionParser()
     
-    parser.add_option('--code_path',dest='code_path',help='Path of the code, to make it easy to transfer code and have it still work. DEFAULT: /srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/', default='/srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/')
+    parser.add_option('--code_path',dest='code_path',help='Path of the code, to make it easy to transfer code and have it still work')
     parser.add_option('--metadata',dest='metadata',help='Metadata file. One line per condition. Should be tab or space-delimited: 1. Individual, 2. sample name (unique),3. fastq1, 4. fastq2, 5. genome_path (for instance for <path>/NA19099 the genome_path=path), 6. gender,7. vcf file for personal genome,alignment directory. If any of these entries is missing, e.g. fastq2 is missing, say NA. Header should start with #')
     parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. vcf,createGenome, align, reconcile, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
-    parser.add_option('--vcf_data',dest='vcf_data',help='Big VCF file containing all info for the individual to be put into the individual"s VCF. This parameter only required if step_to_perform==vcf. DEFAULT: /srv/gs1/projects/kundaje/oursu/Alignment/data/1000Genomes/VCF/ALL.chrAll.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf',default='/srv/gs1/projects/kundaje/oursu/Alignment/data/1000Genomes/VCF/ALL.chrAll.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf')
     parser.add_option('--sample_names_to_do',dest='todo',help='Sample names for subset of things to run',default='')
     opts,args=parser.parse_args()
     
@@ -23,7 +22,6 @@ def main():
         if line[0]=='#':
             continue
         items=line.strip().split()
-        #print items
         individual=items[0]
         fastq1=items[2]
         fastq2=items[3]
@@ -44,30 +42,11 @@ def main():
             sample_di[sample_name]['gender']=gender
             sample_di[sample_name]['vcf']=vcf_file
             sample_di[sample_name]['alignment_directory']=align_dir
-    print sample_di.keys()
-    print '---------------------'
     if opts.todo!='':
         of_interest=opts.todo.split(',')
     else:
         of_interest=sample_di.keys()
-    print 'Of interest'
-    print of_interest
-
-    #EXTRACT VCF FILE
-    done=set()
-    if opts.step_to_perform=='vcf':
-        vcf_code=opts.code_path+'make_individual_vcf.py'
-        for sample_name in sample_di.keys():
-            if sample_name not in of_interest:
-                continue
-            if sample_di[sample_name]['individual'] not in done:
-                out_vcf=sample_di[sample_name]['vcf']
-                cmd='python '+vcf_code+' --out_vcf '+out_vcf+' --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --vcf_data '+opts.vcf_data
-                os.system(cmd)
-                done.add(sample_di[sample_name]['individual'])
-                #TODO: error handling when individual is not in the vcfs
-        print done
-        print len(done)
+    print 'Focusing on these samples: '+of_interest
 
     #BUILD PERSONAL GENOME
     done=set()
