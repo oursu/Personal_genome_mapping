@@ -2,9 +2,11 @@ Update: Code now works on the scg3 cluster (i.e. on an sge-based cluster)
 
 Code for mapping to personal genomes comes from the chromatin variation project (Kasowski et al. 2013). 
 
-bin: Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
+new_ase_code/ase/bin
+Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
 generation, QC etc). In many cases there's two scripts with similar names (eg. alignSample.sh and
 alignBatch.sh). In these cases, the "Sample" script does the actual work. The "Batch" script reads
 metadata (such as cell line name, factor name etc) and submits jobs that call the "Sample" script.
 
-python: Code for creating personal genomes (the add*Snps* files). Various other utilities.
+new_ase_code/ase/python
+Code for creating personal genomes (the add*Snps* files). Various other utilities.
