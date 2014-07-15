@@ -6,7 +6,9 @@ import os.path
 
 def addSnps(fa, snppos, snpallele, p):
     for idx, pos in enumerate(snppos):
+        #print 'in add snps alleles:'
         alleles = snpallele[idx]
+        #print alleles
         if fa[pos].islower():
             fa[pos] = alleles[p].lower()
         else:
@@ -34,6 +36,7 @@ parser.add_argument('-v', '--vcf', help = 'Vcf file. If not provided, reads from
 parser.add_argument('-s', '--step', help = 'Number of characters per line of output fa [%(default)s].', type = int, default = 50)
 parser.add_argument('-p', '--unphased', help = 'File to store unphased locations in VCF. These will be phased randomly.')
 parser.add_argument('-c', '--chrom', help = 'Add chr to the chromosome names in VCF [%(default)s].', action = 'store_true', default = False)
+
 
 args = parser.parse_args()
 fadir = args.fadir
@@ -71,7 +74,8 @@ for line in fileinput.input(vcflist):
     fields = line.strip().split()
     if fields[0] == '#CHROM':
         for i, f in enumerate(fields):
-            if f == indiv:
+            #if f == indiv:
+            if indiv in f:
                 individx = i
                 break
         if individx < 0:
@@ -93,7 +97,12 @@ for line in fileinput.input(vcflist):
             continue
         pos = int(fields[1]) - 1 # Convert 1-based VCF pos to 0-based index       
         alleles = fields[3:5]
-        if len(alleles[1]) != 1:
+        #print '========'
+        #print 'alleles'
+        #print alleles
+        #print 'original input'
+        #print line.strip()
+        if len(alleles[1]) != 1 or len(alleles[0]) != 1:
             print >> sys.stderr, 'Multiallelic or non-SNP, skipping', chrom, pos + 1
             continue
         subfields = fields[individx].split(':')
@@ -101,8 +110,9 @@ for line in fileinput.input(vcflist):
         if len(genstr) != 2:
             tmp = subfields[0].split('/')  
             if len(tmp) == 2: # randomly phase the unphased ones
-                if len(unphased) > 0:
-                    unfile.write(chrom + '\t' + str(pos + 1) + '\n')
+                #print 'Randomly phasing'
+                ####if len(unphased) > 0:
+                ####    unfile.write(chrom + '\t' + str(pos + 1) + '\n')
                 randidx = randint(0, 1)
                 genstr = [tmp[randidx], tmp[1 - randidx]]
             elif len(tmp) == 1: # chrY
@@ -114,6 +124,10 @@ for line in fileinput.input(vcflist):
             print >> sys.stderr, 'Unknown genotype', chrom, pos + 1
             continue
         gen = [int(g) for g in genstr]
+        #print 'gen'
+        #print gen
+        #print 'snp alleles'
+        #print [alleles[g] for g in gen]
         snppos[chrom].append(pos)
         snpallele[chrom].append([alleles[g] for g in gen])
 
@@ -122,12 +136,17 @@ if len(unphased) > 0:
 
 mout = open(outpref + '.maternal.fa', 'w')
 pout = open(outpref + '.paternal.fa', 'w')
+##########
 for c in chroms:
+#for c in ['chr10']:
+    #c='chr21'
     mfa = []
     pfa = []
     with open(os.path.join(fadir, c + '.fa'), 'r') as fafile:
         print >> sys.stderr, 'Loading', c
         for faline in fafile:
+            #print 'faline'
+            #print faline
             if faline[0] == '>':
                 continue
             mfa.extend(faline.strip())
@@ -160,5 +179,7 @@ for c in chroms:
         stop = min(i + step, len(mfa))
         mout.write(''.join(mfa[start:stop]) + '\n')
         pout.write(''.join(pfa[start:stop]) + '\n')
+    #########
+    #break
 mout.close()
 pout.close()
