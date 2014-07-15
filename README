@@ -1,3 +1,5 @@
+Update: Code now works on the scg3 cluster (i.e. on an sge-based cluster)
+
 Code for the chromatin variation project (Kasowski et al. 2013). 
 
 bin: Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
