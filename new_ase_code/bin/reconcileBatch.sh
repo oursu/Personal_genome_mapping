@@ -15,7 +15,7 @@ OPTIONS:
 EOF
 }
 
-CLEAN=''
+CLEAN='-c'
 RNA=0
 INDIR=
 OUTDIR=
@@ -51,21 +51,24 @@ if [ ! -d $INDIR ]; then
     echo 'Indir does not exist' 1>&2; exit 1;
 fi
 
+CODE_DIR=/srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/new_ase_code/ase
 while read -r sample fq2 ; do
-    if [[ "$sample" =~ ^SNYDER_HG19_ ]]; then
-	sample=$sample
-    else
-	sample=${sample^^} # This will convert to uppercase
-	if [[ "$sample" =~ ^[0-9]+ ]]; then # Correct HapMap names
-	    sample="GM"$sample
-	fi
-	sample="SNYDER_HG19_${sample}"
-    fi
+    #if [[ "$sample" =~ ^SNYDER_HG19_ ]]; then
+    #	sample=$sample
+    #else
+    #    sample=${sample^^} # This will convert to uppercase
+    #	if [[ "$sample" =~ ^[0-9]+ ]]; then # Correct HapMap names
+    #	    sample="GM"$sample
+    #	fi
+    #	sample="SNYDER_HG19_${sample}"
+    #fi
+    sample=$sample
     inpref=${INDIR}/${sample}
-
+    echo $sample
     if [[ ( ! -s ${inpref}_maternal.bam ) || ( ! -s ${inpref}_paternal.bam ) ]]; then
 	echo "Skipping $sample. Maternal and/or paternal bam file missing." 1>&2; continue;
     fi
+
     if [[ $RNA -eq 1 ]]; then
 	nopt="-n"
 	final=${OUTDIR}/dedup/nsort/${sample}_reconcile.dedup.bam
@@ -81,8 +84,10 @@ while read -r sample fq2 ; do
     fi
 
     if [[ $CLEAN == "-c" || ! -f  $final ]]; then
-	echo "$sample"
-	bsub -J ${sample}_reconcile -e /dev/null -o /dev/null -n 1 -q research-rh6 -W 24:00 -M 16384 -R "rusage[mem=16384]" "${MAYAROOT}/src/bin/reconcileSample.sh --indir $INDIR --outdir $OUTDIR --sample ${sample} $CLEAN $nopt $single"
+	echo ${CODE_DIR}/bin/reconcileSample.sh --ind $INDIR --outdir $OUTDIR --sample ${sample} $CLEAN $nopt $single > ${OUTDIR}/${sample}_reconcile_script.sh
+	chmod 711 ${OUTDIR}/${sample}_reconcile_script.sh
+	qsub -l h_vmem=20G -l h_rt=20:00:00 -e ${OUTDIR}/${sample}_reconcile_script.sh.err -o ${OUTDIR}/${sample}_reconcile_script.sh.o ${OUTDIR}/${sample}_reconcile_script.sh
+	#bsub -J ${sample}_reconcile -e /dev/null -o /dev/null -n 1 -q research-rh6 -W 24:00 -M 16384 -R "rusage[mem=16384]" "${MAYAROOT}/src/bin/reconcileSample.sh --indir $INDIR --outdir $OUTDIR --sample ${sample} $CLEAN $nopt $single"
     #else
     #	echo "Skipping $sample. Output file exists." 1>&2; continue;
     fi
