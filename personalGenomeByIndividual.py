@@ -12,22 +12,29 @@ def main():
     
     parser.add_option('--python_path',dest='python_path',help='Python path. DEFAULT=/srv/gsfs0/projects/kundaje/users/oursu/code/python_2.7.6',
                       default='/srv/gsfs0/projects/kundaje/users/oursu/code/python_2.7.6')
-    parser.add_option('--code_path',dest='code_path',help='Code path.',default='/srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/')
+    parser.add_option('--code_path',dest='code_path',help='Code path.')
     parser.add_option('--addSNPtoFa',dest='addSNP',action='store_true')
     parser.add_option('--BWAindex',dest='BWAindex',action='store_true')
+    parser.add_option('--BowtieIndex',dest='BowtieIndex',action='store_true')
+    parser.add_option('--fadir',dest='fadir',help='Directory with fasta files for the genome. One file per chromosome.')
+    parser.add_option('--genome_dict',dest='genome_dict',help='fa.fai file with sizes of the chromosomes.')
     #parser.add_option('--check_genome_by_vcf',dest='BWAindex',action='store_true')
     parser.add_option('--out_dir',dest='out_dir',help='Directory for writing the personal genome')
     parser.add_option('--vcf',dest='vcf',help='Location of big vcf file')
     parser.add_option('--indiv',dest='indiv',help='Individual: format is like NA19099')
-    parser.add_option('--gender',dest='gender',help='Individual gender. Genomes used are the ones from ENCODE. They can be found at /srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/ .DEFAULT: female',default='female')
+    parser.add_option('--gender',dest='gender',help='Individual gender. Genomes used are the ones from ENCODE. They can be found at /srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/ .DEFAULT: female. These will be used to mask chrY for males. If using a transcriptome, this will not do anything.',default='female')
     opts,args=parser.parse_args()
     
-    if opts.gender=='female':
-        fadir='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/female/'
-        genome_dict='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/female/ref.fa.fai'
-    elif opts.gender=='male':
-        fadir='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/'
-        genome_dict='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/ref.fa.fai'
+    fadir=opts.fadir
+    genome_dict=opts.genome_dict
+    if opts.fadir=='' and opts.genome_dict=='':
+        #Defaults for the chromo paper.
+        if opts.gender=='female':
+            fadir='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/female/'
+            genome_dict='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/female/ref.fa.fai'
+        elif opts.gender=='male':
+            fadir='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/'
+            genome_dict='/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/ref.fa.fai'
     #out_genome=opts.out_dir+'/'+opts.indiv
 
     total_cmds=[]
@@ -36,26 +43,28 @@ def main():
     #=============================
     # ADD SNPS TO REFERENCE GENOME
     #=============================
-    addSNP_cmd=opts.python_path+' '+opts.code_path+'new_ase_code/ase/python/addSnpsToFa.py --vcf '+opts.vcf+' --unphased '+individual_prefix+'.unphased '+fadir+' '+genome_dict+' '+individual_prefix+' '+opts.indiv
-    #if opts.gender=='female':
-    #    #addSNP_cmd=addSNP_cmd+' -f '
-    check_genome='/srv/gs1/software/python/2.7/bin/python'+' '+opts.code_path+'checkPersonalGenomeIsCorrect.py --fasta_1m '+individual_prefix+'.maternal.fa'+' --fasta_1p '+individual_prefix+'.paternal.fa'+' --out '+individual_prefix+'_GenomeCorrect'+' --vcf '+opts.vcf
-    print check_genome
+    addSNP_cmd=opts.python_path+' '+opts.code_path+'new_ase_code/python/addSnpsToFa.py --vcf '+opts.vcf+' --unphased '+individual_prefix+'.unphased '+fadir+' '+genome_dict+' '+individual_prefix+' '+opts.indiv
+    if opts.gender=='female':
+        addSNP_cmd=addSNP_cmd+' -f '
     if opts.addSNP:
         total_cmds.append(addSNP_cmd)
-        total_cmds.append('/srv/gs1/software/samtools/samtools-0.1.19/bin/samtools faidx '+individual_prefix+'.paternal.fa')
-        total_cmds.append('/srv/gs1/software/samtools/samtools-0.1.19/bin/samtools faidx '+individual_prefix+'.maternal.fa')
-        total_cmds.append(check_genome)
+
     #========================
     # MAKE GENOME IDX FOR BWA
     #========================
-    BWAindex_cmd=opts.code_path+'new_ase_code/ase/bin/createBwaIdx.sh -i '+'/'+opts.out_dir.strip('/')+' -x bwa -e '+opts.indiv
+    BWAindex_cmd=opts.code_path+'new_ase_code/bin/createBwaIdx.sh -i '+'/'+opts.out_dir.strip('/')+' -x bwa -e '+opts.indiv
 
     if opts.BWAindex:
         total_cmds.append(BWAindex_cmd)
-
     os.system('mkdir '+opts.out_dir+'/scripts')
-    qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','20G')
+
+    #===========================
+    # MAKE GENOME IDX FOR BOWTIE
+    #===========================
+    #Under construction
+
+    qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','3G')
+
 
 def qsub_a_command(cmd,shell_script_name,split_string=',',memory_number='20G'):
     #write a shell script (for reproducibility)

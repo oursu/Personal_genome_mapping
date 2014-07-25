@@ -50,6 +50,8 @@ def main():
             gender_di[person]['population']=popul
     gender_di['GM19193']={}
     gender_di['GM19193']['gender']='female'
+    gender_di['NA19193']={}
+    gender_di['NA19193']['gender']='female'
     #Write the dictionary to a file
     out=open(opts.out,'w')
     out.write('#Individual\tSampleName\tFQ1\tFQ2\tGenomePath\tGender\tVcfFile\tAlignmentDirectory\n')

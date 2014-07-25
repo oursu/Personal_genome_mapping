@@ -4,8 +4,9 @@ import math
 from time import gmtime, strftime
 
 '''
-Author:Oana Ursu
-Call the pipeline steps for each sample in the dataset.
+Mapping wrapper
+Call the pipeline for mapping to personal genomes.
+oursu@stanford.edu
 '''
 
 def main():
@@ -15,6 +16,8 @@ def main():
     parser.add_option('--metadata',dest='metadata',help='Metadata file. One line per condition. Should be tab or space-delimited: 1. Individual, 2. sample name (unique),3. fastq1, 4. fastq2, 5. genome_path (for instance for <path>/NA19099 the genome_path=path), 6. gender,7. vcf file for personal genome,alignment directory. If any of these entries is missing, e.g. fastq2 is missing, say NA. Header should start with #')
     parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. vcf,createGenome, align, reconcile, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
     parser.add_option('--sample_names_to_do',dest='todo',help='Sample names for subset of things to run',default='')
+    parser.add_option('--fadir_male',dest='fadir_male',help='Fadir male',default='')
+    parser.add_option('--genome_dict_male',dest='genome_dict_male',default='')
     opts,args=parser.parse_args()
     
     sample_di={}
@@ -46,7 +49,8 @@ def main():
         of_interest=opts.todo.split(',')
     else:
         of_interest=sample_di.keys()
-    print 'Focusing on these samples: '+of_interest
+    print 'Focusing on these samples: '
+    print of_interest
 
     #BUILD PERSONAL GENOME
     done=set()
@@ -59,7 +63,7 @@ def main():
             if sample_di[sample_name]['vcf']=='NA':
                 sys.exit('No input vcf file for '+sample_name+'. Exiting ..')
             if sample_di[sample_name]['individual'] not in done:
-                cmd='python '+personal_genome_script+' --addSNPtoFa --BWAindex --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'
+                cmd='python '+personal_genome_script+' --addSNPtoFa --BowtieIndex --BWAindex --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'+' --fadir '+opts.fadir_male+' --genome_dict '+opts.genome_dict_male+' --code_path '+opts.code_path
                 print cmd
                 os.system(cmd)
                 done.add(sample_di[sample_name]['individual'])
