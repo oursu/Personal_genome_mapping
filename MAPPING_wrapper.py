@@ -18,6 +18,8 @@ def main():
     parser.add_option('--sample_names_to_do',dest='todo',help='Sample names for subset of things to run',default='')
     parser.add_option('--fadir_male',dest='fadir_male',help='Fadir male',default='')
     parser.add_option('--genome_dict_male',dest='genome_dict_male',default='')
+    parser.add_option('--BWAindex',dest='BWAindex',action='store_true')
+    parser.add_option('--BowtieIndex',dest='BowtieIndex',action='store_true')
     opts,args=parser.parse_args()
     
     sample_di={}
@@ -63,7 +65,11 @@ def main():
             if sample_di[sample_name]['vcf']=='NA':
                 sys.exit('No input vcf file for '+sample_name+'. Exiting ..')
             if sample_di[sample_name]['individual'] not in done:
-                cmd='python '+personal_genome_script+' --addSNPtoFa --BowtieIndex --BWAindex --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'+' --fadir '+opts.fadir_male+' --genome_dict '+opts.genome_dict_male+' --code_path '+opts.code_path
+                cmd='python '+personal_genome_script+' --addSNPtoFa --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'+' --fadir '+opts.fadir_male+' --genome_dict '+opts.genome_dict_male+' --code_path '+opts.code_path
+                if opts.BWAindex:
+                    cmd=cmd+' --BWAindex'
+                if opts.BowtieIndex:
+                    cmd=cmd+' --BowtieIndex'
                 print cmd
                 os.system(cmd)
                 done.add(sample_di[sample_name]['individual'])

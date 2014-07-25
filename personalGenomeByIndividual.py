@@ -62,6 +62,10 @@ def main():
     # MAKE GENOME IDX FOR BOWTIE
     #===========================
     #Under construction
+    BowtieIndex_cmd=opts.code_path+'new_ase_code/bin/createBwaIdx.sh -i '+'/'+opts.out_dir.strip('/')+' -x bowtie2 -e '+opts.indiv
+    if opts.BowtieIndex:
+        print BowtieIndex_cmd
+        total_cmds.append(BowtieIndex_cmd)
 
     qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','3G')
 
