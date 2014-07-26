@@ -14,7 +14,7 @@ def main():
     
     parser.add_option('--code_path',dest='code_path',help='Path of the code, to make it easy to transfer code and have it still work')
     parser.add_option('--metadata',dest='metadata',help='Metadata file. One line per condition. Should be tab or space-delimited: 1. Individual, 2. sample name (unique),3. fastq1, 4. fastq2, 5. genome_path (for instance for <path>/NA19099 the genome_path=path), 6. gender,7. vcf file for personal genome,alignment directory. If any of these entries is missing, e.g. fastq2 is missing, say NA. Header should start with #')
-    parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. vcf,createGenome, align, reconcile, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
+    parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. vcf,createGenome, alignBWA, alignTophat, reconcile, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
     parser.add_option('--sample_names_to_do',dest='todo',help='Sample names for subset of things to run',default='')
     parser.add_option('--fadir_male',dest='fadir_male',help='Fadir male',default='')
     parser.add_option('--genome_dict_male',dest='genome_dict_male',default='')
@@ -95,7 +95,7 @@ def main():
             print cmd
     
     #ALIGN
-    if opts.step_to_perform=='align':
+    if opts.step_to_perform=='alignBWA':
         alignment_script=opts.code_path+'new_ase_code/ase/bin/alignBatch.sh'
         for sample_name in sample_di.keys():
             if sample_name not in of_interest:
@@ -114,6 +114,27 @@ def main():
                 print cmd
                 os.system(cmd)
                 #print cmd
+    #Get ready to align RNA
+    if opts.step_to_perform=='alignTopHat':
+        alignment_script=opts.code_path+'new_ase_code/ase/bin/alignRnaSample_v2.sh'
+        for sample_name in sample_di.keys():
+            if sample_name not in of_interest:
+                continue
+            if sample_di[sample_name]['alignment_directory']=='NA':
+                sys.exit('No alignment directory provided for '+sample_name+'. Exiting ..')
+            alignment_prefix=sample_di[sample_name]['alignment_directory']+sample_di[sample_name]['sample_name']
+            #Make sure genome exists                                                                                                                                                                                                                                                                               
+            if os.path.isfile(sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual'].split('-')[0]+'.maternal.1.bt2'):
+
+                #First, make the file required for alignBatch.sh
+                info_file=sample_di[sample_name]['alignment_directory']+'info_'+sample_di[sample_name]['sample_name']
+                make_info='echo '+sample_di[sample_name]['sample_name']+' '+sample_di[sample_name]['individual'].split('-')[0]+' '+os.path.basename(sample_di[sample_name]['fastq1'])+' '+os.path.basename(sample_di[sample_name]['fastq2'])+' > '+info_file
+                os.system(make_info)
+                #Run alignment                                                                                                                                                                                                                                                                                     
+                cmd=alignment_script+' -f '+os.path.dirname(sample_di[sample_name]['fastq1'])+' -b '+sample_di[sample_name]['alignment_directory']+' -s '+sample_di[sample_name]['genome_path']+' -l '+info_file
+                print cmd
+                os.system(cmd)
+                #print cmd                                
 
     #TAGALIGN
     if opts.step_to_perform=='tagAlign':
