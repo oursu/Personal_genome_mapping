@@ -58,6 +58,7 @@ def main():
     for id_name in di.keys():
         genome_path=opts.genome_path
         alignment_directory=opts.alignment_directory
+        os.system('mkdir '+alignment_directory)
         g='NA'
         if di[id_name]['person'] in gender_di.keys():                                                                                                                         
             if 'gender' in gender_di[di[id_name]['person']].keys():  

@@ -47,13 +47,21 @@ def main():
     if opts.gender=='female':
         addSNP_cmd=addSNP_cmd+' -f '
     if opts.addSNP:
+        check_genome='/srv/gs1/software/python/2.7/bin/python'+' '+opts.code_path+'checkPersonalGenomeIsCorrect.py --fasta_1m '+individual_prefix+'.maternal.fa'+' --fasta_1p '+individual_prefix+'.paternal.fa'+' --out '+individual_prefix+'_GenomeCorrect'+' --vcf '+opts.vcf+' --indiv '+opts.indiv
         total_cmds.append(addSNP_cmd)
+        #make fai files
+        #check genome correct
+        total_cmds.append('module load samtools/0.1.19')
+        total_cmds.append('samtools faidx '+individual_prefix+'.paternal.fa')
+        total_cmds.append('samtools faidx '+individual_prefix+'.maternal.fa')
+        total_cmds.append(check_genome)
 
     #========================
     # MAKE GENOME IDX FOR BWA
     #========================
     BWAindex_cmd=opts.code_path+'new_ase_code/bin/createBwaIdx.sh -i '+'/'+opts.out_dir.strip('/')+' -x bwa -e '+opts.indiv
 
+    
     if opts.BWAindex:
         total_cmds.append(BWAindex_cmd)
     os.system('mkdir '+opts.out_dir+'/scripts')
@@ -61,12 +69,11 @@ def main():
     #===========================
     # MAKE GENOME IDX FOR BOWTIE
     #===========================
-    #Under construction
     BowtieIndex_cmd=opts.code_path+'new_ase_code/bin/createBwaIdx.sh -i '+'/'+opts.out_dir.strip('/')+' -x bowtie2 -e '+opts.indiv
     if opts.BowtieIndex:
         print BowtieIndex_cmd
         total_cmds.append(BowtieIndex_cmd)
-
+    
     qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','3G')
 
 
