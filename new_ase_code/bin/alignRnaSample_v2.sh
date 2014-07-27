@@ -67,10 +67,9 @@ alignScript=${BAMDIR}/${MPREF}_script.sh
 source ${SFILE}
 echo "source ${SFILE}" > ${alignScript}
 # TopHat options
+ALN="-p 4 --no-discordant --library-type fr-firststrand --b2-sensitive --no-novel-indels --no-novel-juncs"
 if [[ $NOVELJUNCS -eq 1 ]]; then
     ALN="-p 4 --no-discordant --library-type fr-firststrand --b2-sensitive --no-novel-indels"
-else 
-    ALN="-p 4 --no-discordant --library-type fr-firststrand --b2-sensitive --no-novel-indels --no-novel-juncs"
 fi
 
 echo "Alignment parameters:"
@@ -117,8 +116,8 @@ if [[ -s ${FQ1} ]]; then
     if [[ $CLEAN -eq 1 || ! -f ${BAMDIR}/${MPREF}.bam ]]; then
 	echo "samtools view -H ${BAMDIR}/${MPREF}/accepted_hits.bam | sed 's/SO:coordinate/SO:unsorted/' > ${BAMDIR}/${MPREF}/header.sam" >>${alignScript}
 	echo "samtools cat -h ${BAMDIR}/${MPREF}/header.sam ${BAMDIR}/${MPREF}/accepted_hits.bam ${BAMDIR}/${MPREF}/unmapped.bam | samtools view -b -F0x100 - | samtools sort -n -m 2000000000 - ${BAMDIR}/${MPREF}" >>${alignScript}
-	echo "rm ${BAMDIR}/${MPREF}/accepted_hits.bam ${BAMDIR}/${MPREF}/*bed ${BAMDIR}/${MPREF}/unmapped.bam" >>${alignScript}
-	echo "rm 
+	echo "rm ${BAMDIR}/${MPREF}/accepted_hits.bam ${BAMDIR}/${MPREF}/*bed ${BAMDIR}/${MPREF}/unmapped.bam" >> ${alignScript}
+	#echo "rm -r ${BAMDIR}/${MPREF}" >> ${alignScript}
     fi
 fi
 
