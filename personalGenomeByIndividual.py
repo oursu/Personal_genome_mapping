@@ -23,6 +23,7 @@ def main():
     parser.add_option('--vcf',dest='vcf',help='Location of big vcf file')
     parser.add_option('--indiv',dest='indiv',help='Individual: format is like NA19099')
     parser.add_option('--gender',dest='gender',help='Individual gender. Genomes used are the ones from ENCODE. They can be found at /srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/ .DEFAULT: female. These will be used to mask chrY for males. If using a transcriptome, this will not do anything.',default='female')
+    parser.add_option('--chromo',dest='chromo',action='store_true')
     opts,args=parser.parse_args()
     
     fadir=opts.fadir
@@ -43,7 +44,10 @@ def main():
     #=============================
     # ADD SNPS TO REFERENCE GENOME
     #=============================
-    addSNP_cmd=opts.python_path+' '+opts.code_path+'new_ase_code/python/addSnpsToFa.py --vcf '+opts.vcf+' --unphased '+individual_prefix+'.unphased '+fadir+' '+genome_dict+' '+individual_prefix+' '+opts.indiv
+    chromoadd=''
+    if opts.chromo:
+        chromoadd=' --chrom'
+    addSNP_cmd=opts.python_path+' '+opts.code_path+'new_ase_code/python/addSnpsToFa.py --vcf '+opts.vcf+' --unphased '+individual_prefix+'.unphased '+fadir+' '+genome_dict+' '+individual_prefix+' '+opts.indiv+' '+chromoadd
     if opts.gender=='female':
         addSNP_cmd=addSNP_cmd+' -f '
     if opts.addSNP:
@@ -74,7 +78,7 @@ def main():
         print BowtieIndex_cmd
         total_cmds.append(BowtieIndex_cmd)
     
-    qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','3G')
+    qsub_a_command('qqqqq'.join(total_cmds),opts.out_dir+'/scripts/'+opts.indiv+"personalGenomeByIndividual.sh",'qqqqq','20G')
 
 
 def qsub_a_command(cmd,shell_script_name,split_string=',',memory_number='20G'):

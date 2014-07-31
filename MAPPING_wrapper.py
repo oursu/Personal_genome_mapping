@@ -14,7 +14,7 @@ def main():
     parser.add_option('--bashrc_file',dest='bashrc',help='Bashrc file',default='/srv/gsfs0/projects/kundaje/users/oursu/code/git_things/Personal_genome_mapping/personal_genome_mapping.bashrc')
     parser.add_option('--code_path',dest='code_path',help='Path of the code, to make it easy to transfer code and have it still work')
     parser.add_option('--metadata',dest='metadata',help='Metadata file. One line per condition. Should be tab or space-delimited: 1. Individual, 2. sample name (unique),3. fastq1, 4. fastq2, 5. genome_path (for instance for <path>/NA19099 the genome_path=path), 6. gender,7. vcf file for personal genome,alignment directory. If any of these entries is missing, e.g. fastq2 is missing, say NA. Header should start with #')
-    parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. vcf,createGenome, alignBWA, alignTophat, reconcile, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
+    parser.add_option('--step_to_perform',dest='step_to_perform',help='Step to perform. createGenome, alignBWA, alignTophat, reconcileBWA,reconcileTopHat, tagAlign. Here is what info each requires. vcf: Individual, vcf. createGenome: vcf, individual, gender and genome_path. align: individual, sample name, fastq1, fastq2,genome_path, alignment directory. reconcile: sample name, fastq1, fastq2, alignment_directory.  The rest of the items MUST BE PRESENT in the metadata file in the specified order, either as some actual values, or as the text NA to mark them.')
     parser.add_option('--sample_names_to_do',dest='todo',help='Sample names for subset of things to run',default='')
     parser.add_option('--fadir_male',dest='fadir_male',help='Fadir male',default='')
     parser.add_option('--genome_dict_male',dest='genome_dict_male',default='')
@@ -22,6 +22,7 @@ def main():
     parser.add_option('--BowtieIndex',dest='BowtieIndex',action='store_true')
     parser.add_option('--gtf',dest='gtf',default='NA')
     parser.add_option('--trpref',dest='trpref',default='NA')
+    parser.add_option('--chromo',dest='chromo',action='store_true')
     parser.add_option('--RNAnoveljuncs',dest='noveljuncs',action='store_true', help='set this if you want tophat run for RNA to include novel junctions.')
     opts,args=parser.parse_args()
     
@@ -58,6 +59,9 @@ def main():
     print of_interest
 
     #BUILD PERSONAL GENOME
+    chromoadd=''
+    if opts.chromo:
+        chromoadd=' --chromo'
     done=set()
     if opts.step_to_perform=='createGenome':
         personal_genome_script=opts.code_path+'personalGenomeByIndividual.py'
@@ -68,7 +72,7 @@ def main():
             if sample_di[sample_name]['vcf']=='NA':
                 sys.exit('No input vcf file for '+sample_name+'. Exiting ..')
             if sample_di[sample_name]['individual'] not in done:
-                cmd='python '+personal_genome_script+' --addSNPtoFa --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'+' --fadir '+opts.fadir_male+' --genome_dict '+opts.genome_dict_male+' --code_path '+opts.code_path
+                cmd='python '+personal_genome_script+' --addSNPtoFa --indiv '+sample_di[sample_name]['individual'].split('-')[0]+' --gender '+sample_di[sample_name]['gender']+' --vcf '+sample_di[sample_name]['vcf']+' --out_dir '+sample_di[sample_name]['genome_path']+'/'+' --fadir '+opts.fadir_male+' --genome_dict '+opts.genome_dict_male+' --code_path '+opts.code_path+chromoadd
                 if opts.BWAindex:
                     cmd=cmd+' --BWAindex'
                 if opts.BowtieIndex:
@@ -78,8 +82,8 @@ def main():
                 done.add(sample_di[sample_name]['individual'])
     
     #RECONCILE
-    if opts.step_to_perform=='reconcile':
-        reconcile_script=opts.code_path+'new_ase_code/ase/bin/reconcileBatch.sh'
+    if opts.step_to_perform=='reconcileBWA':
+        reconcile_script=opts.code_path+'new_ase_code/bin/reconcileBatch.sh'
         for sample_name in sample_di.keys():
             print 'checking if in of interest'
             print sample_name
@@ -96,6 +100,27 @@ def main():
             cmd=reconcile_script+' -i '+input_dir+' -o '+output_dir+' -l '+info_file_reconcile
             os.system(cmd)
             print cmd
+    if opts.step_to_perform=='reconcileTopHat':
+        reconcile_script=opts.code_path+'new_ase_code/bin/reconcileRnaSample.sh'
+        for sample_name in sample_di.keys():
+            print sample_name
+            print sample_name in of_interest
+            if sample_name not in of_interest:
+                continue
+            print 'ready to reconcile'
+            input_dir=sample_di[sample_name]['alignment_directory']+sample_name
+            output_dir=sample_di[sample_name]['alignment_directory']
+            os.system('mkdir '+output_dir)
+            #--paired
+            pairedend='0'
+            if sample_di[sample_name]['fastq2']!='NA':
+                pairedend='1'
+            cmd=reconcile_script+' --indir '+input_dir+' --outdir '+output_dir+' --sample '+sample_name+' --sfile '+opts.bashrc+' --paired '+pairedend
+            print cmd
+            qsub_a_command(cmd,output_dir+'/'+sample_name+'_reconcileScript.sh','qqqq','20G')
+            
+
+    
     
     #ALIGN
     if opts.step_to_perform=='alignBWA':
@@ -132,7 +157,7 @@ def main():
             #Make sure genome exists                                                                                                                                                                                                                                                                               
             if os.path.isfile(sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual'].split('-')[0]+'.maternal.1.bt2'):
                 bamdir=sample_di[sample_name]['alignment_directory']+sample_name
-                cmd=alignment_script+' --fq1 '+sample_di[sample_name]['fastq1']+' --fq2 '+sample_di[sample_name]['fastq2']+' --bamdir '+bamdir+' --mpref '+sample_name+'.maternal'+' --seqpref '+sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual']+'.maternal'+' --trpref '+opts.trpref+' --gtf '+opts.gtf+' --sfile '+opts.bashrc+' -c'
+                cmd=alignment_script+' --fq1 '+sample_di[sample_name]['fastq1']+' --fq2 '+sample_di[sample_name]['fastq2']+' --bamdir '+bamdir+' --mpref '+sample_name+'_maternal'+' --seqpref '+sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual']+'.maternal'+' --trpref '+opts.trpref+' --gtf '+opts.gtf+' --sfile '+opts.bashrc+' -c'
                 if opts.noveljuncs:
                     cmd=cmd+' -j'
                 cmd2=re.sub('maternal','paternal',cmd)
