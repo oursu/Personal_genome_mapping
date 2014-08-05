@@ -67,9 +67,9 @@ alignScript=${BAMDIR}/${MPREF}_script.sh
 source ${SFILE}
 echo "source ${SFILE}" > ${alignScript}
 # TopHat options
-ALN="-p 4 --no-discordant --library-type fr-firststrand --b2-sensitive --no-novel-indels --no-novel-juncs"
+ALN="-p 4 --library-type fr-firststrand --b2-sensitive --no-novel-indels --no-novel-juncs"
 if [[ $NOVELJUNCS -eq 1 ]]; then
-    ALN="-p 4 --no-discordant --library-type fr-firststrand --b2-sensitive --no-novel-indels"
+    ALN="-p 4 --library-type fr-firststrand --b2-sensitive --no-novel-indels"
 fi
 
 echo "Alignment parameters:"
