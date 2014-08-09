@@ -72,14 +72,8 @@ if [[ ( ! -s ${inpref}_maternal.bam ) || ( ! -s ${inpref}_paternal.bam ) ]]; the
 fi
 
 if [[ $CLEAN -eq 1 || ! -f ${recpref}.bam ]]; then
-    #First, need to make sure both maternal and paternal alignments have the same reads. They should, but sometimes they don't.
-    #echo "samtools view ${inpref}_paternal.bam | cut -f1 > ${inpref}_paternal.bam_reads" >> ${reconcileScript}
-    #echo "samtools view ${inpref}_maternal.bam | cut -f1 > ${inpref}_maternal.bam_reads" >> ${reconcileScript}
-    #echo "comm -3 ${inpref}_paternal.bam_reads ${inpref}_maternal.bam_reads > ${inpref}_NOTshared_reads" >> ${reconcileScript}
-    #echo "samtools view ${inpref}_paternal.bam | grep -v -f ${inpref}_NOTshared_reads | samtools view -bhS - > ${inpref}_paternal.sharedReads.bam" >> ${reconcileScript}
-    #echo "samtools view ${inpref}_maternal.bam | grep -v -f ${inpref}_NOTshared_reads | samtools view -bhS - > ${inpref}_maternal.sharedReads.bam" >> ${reconcileScript}
     echo '${CODEDIR}'"/new_ase_code/ase_cpp/bin/Ase reconcile rg1=paternal rg2=maternal ${PAIRED} ${inpref}_paternal.bam ${inpref}_maternal.bam ${tmppref}.bam > ${recpref}.out" >> ${reconcileScript}
-    echo "samtools sort -m 2000000000 ${tmppref}.bam ${recpref}" >> ${reconcileScript}
+    echo "samtools view ${tmppref}.bam | samtools sort -m 2000000000 ${tmppref}.bam ${recpref}" >> ${reconcileScript}
     echo "samtools index ${recpref}.bam" >> ${reconcileScript}
 fi
 
