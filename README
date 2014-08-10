@@ -4,15 +4,6 @@ Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster.
 
 An example for how to run the code is found in testFiles/testRun.sh
 
-
-
-
-
-
-
-
-
-
 new_ase_code/bin
 Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
 generation, QC etc). In many cases there's two scripts with similar names (eg. alignSample.sh and
