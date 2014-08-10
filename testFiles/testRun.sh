@@ -51,21 +51,18 @@ genomedict=/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/re
 #1. ======== Personal genome construction ========
 python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forTophat --step_to_perform createGenome --fadir_male ${fadir} --genome_dict_male ${genomedict} --BWAindex --BowtieIndex --chromo
 
-
-
-
-
-
-
 #2. ========= RNA mapping =========
 #Align with Tophat to the personal genome (indexed in the previous step).
 #If you want to provide a gtf file (to align to the personal transcriptome), or for other such options, you can run the command below, to see which settings you can change
 #python ${CODEDIR}/MAPPING_wrapper.py -h
-python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata} --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform alignTopHat
+python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forTophat --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform alignTopHat
 #Reconcile the reads
-python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata} --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform reconcileTopHat
+python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forTophat --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform reconcileTopHat
+#For RNA, please implement your own downstream filters, such as quality (-q), properly paired for paired-end (-f3) and so on
 
 #3. ======== DNA mapping =========
 #Align reads with BWA to the personal genome
-python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata} --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform alignBWA
-
+python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forBWA --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform alignBWA
+python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forBWA --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform reconcileBWA
+#For BWA (DNA more generally), we make a tagAlign file with the reads
+python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forBWA --fadir_male ${fadir} --genome_dict_male ${genomedict} --step_to_perform tagAlign

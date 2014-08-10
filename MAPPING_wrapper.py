@@ -97,7 +97,7 @@ def main():
             input_dir=sample_di[sample_name]['alignment_directory']
             output_dir=sample_di[sample_name]['alignment_directory']+'reconciled'
             os.system('mkdir '+output_dir)
-            cmd=reconcile_script+' -i '+input_dir+' -o '+output_dir+' -l '+info_file_reconcile
+            cmd=reconcile_script+' -i '+input_dir+' -o '+output_dir+' -l '+info_file_reconcile+' -s '+opts.bashrc
             os.system(cmd)
             print cmd
     if opts.step_to_perform=='reconcileTopHat':
@@ -124,7 +124,7 @@ def main():
     
     #ALIGN
     if opts.step_to_perform=='alignBWA':
-        alignment_script=opts.code_path+'new_ase_code/ase/bin/alignBatch.sh'
+        alignment_script=opts.code_path+'new_ase_code/bin/alignBatch.sh'
         for sample_name in sample_di.keys():
             if sample_name not in of_interest:
                 continue
@@ -138,7 +138,7 @@ def main():
                 make_info='echo '+sample_di[sample_name]['sample_name']+' '+sample_di[sample_name]['individual'].split('-')[0]+' '+os.path.basename(sample_di[sample_name]['fastq1'])+' '+os.path.basename(sample_di[sample_name]['fastq2'])+' > '+info_file
                 os.system(make_info)
                 #Run alignment
-                cmd=alignment_script+' -f '+os.path.dirname(sample_di[sample_name]['fastq1'])+' -b '+sample_di[sample_name]['alignment_directory']+' -s '+sample_di[sample_name]['genome_path']+' -l '+info_file
+                cmd=alignment_script+' -f '+os.path.dirname(sample_di[sample_name]['fastq1'])+' -b '+sample_di[sample_name]['alignment_directory']+' -s '+sample_di[sample_name]['genome_path']+' -l '+info_file+' -i '+opts.bashrc
                 print cmd
                 os.system(cmd)
                 #print cmd
@@ -177,6 +177,7 @@ def main():
             dedup_dir=sample_di[sample_name]['alignment_directory']+'reconciled/dedup/'
             aligned_reconciled_deduped=sample_di[sample_name]['sample_name']+'_reconcile.dedup'
             outdir=sample_di[sample_name]['alignment_directory']+'tagAlign'
+            os.system('mkdir '+outdir)
             cmd=tagAlign_script+' --indir '+dedup_dir+' --outdir '+outdir+' --sample '+aligned_reconciled_deduped
             print cmd
             qsub_a_command(cmd,outdir+'/'+aligned_reconciled_deduped+'_tagAlign_script.sh','qqqq','10G')

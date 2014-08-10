@@ -10,6 +10,7 @@ OPTIONS:
    -i DIR [Required] Input directory.
    -o DIR [Required] 
    -l STR List of samples. If not provided, it will read from STDIN.
+   -s STR Source file
    -c     Overwrite [0]
    -r     RNA
 EOF
@@ -20,7 +21,7 @@ RNA=0
 INDIR=
 OUTDIR=
 LIST=
-while getopts "hi:o:l:cr" opt
+while getopts "hi:o:l:s:cr" opt
 do
     case $opt in
 	h)
@@ -31,6 +32,8 @@ do
 	    OUTDIR=$OPTARG;;
 	l)
 	    LIST=$OPTARG;;
+	s)
+	    SFILE=$OPTARG;;
 	c) 
 	    CLEAN='-c';;
 	r)
@@ -51,7 +54,7 @@ if [ ! -d $INDIR ]; then
     echo 'Indir does not exist' 1>&2; exit 1;
 fi
 
-CODE_DIR=/srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/new_ase_code/ase
+source ${SFILE}
 while read -r sample fq2 ; do
     #if [[ "$sample" =~ ^SNYDER_HG19_ ]]; then
     #	sample=$sample
@@ -65,6 +68,8 @@ while read -r sample fq2 ; do
     sample=$sample
     inpref=${INDIR}/${sample}
     echo $sample
+    echo ${inpref}
+    echo ${inpref}_maternal.bam
     if [[ ( ! -s ${inpref}_maternal.bam ) || ( ! -s ${inpref}_paternal.bam ) ]]; then
 	echo "Skipping $sample. Maternal and/or paternal bam file missing." 1>&2; continue;
     fi
@@ -84,11 +89,10 @@ while read -r sample fq2 ; do
     fi
 
     if [[ $CLEAN == "-c" || ! -f  $final ]]; then
-	echo ${CODE_DIR}/bin/reconcileSample.sh --ind $INDIR --outdir $OUTDIR --sample ${sample} $CLEAN $nopt $single > ${OUTDIR}/${sample}_reconcile_script.sh
+	echo ${CODEDIR}new_ase_code/bin/reconcileSample.sh --ind $INDIR --outdir $OUTDIR --sample ${sample} --sfile ${SFILE} $CLEAN $nopt $single > ${OUTDIR}/${sample}_reconcile_script.sh
 	chmod 711 ${OUTDIR}/${sample}_reconcile_script.sh
 	qsub -l h_vmem=20G -l h_rt=20:00:00 -e ${OUTDIR}/${sample}_reconcile_script.sh.err -o ${OUTDIR}/${sample}_reconcile_script.sh.o ${OUTDIR}/${sample}_reconcile_script.sh
-	#bsub -J ${sample}_reconcile -e /dev/null -o /dev/null -n 1 -q research-rh6 -W 24:00 -M 16384 -R "rusage[mem=16384]" "${MAYAROOT}/src/bin/reconcileSample.sh --indir $INDIR --outdir $OUTDIR --sample ${sample} $CLEAN $nopt $single"
-    #else
-    #	echo "Skipping $sample. Output file exists." 1>&2; continue;
+    else
+    	echo "Skipping $sample. Output file exists." 1>&2; continue;
     fi
 done < "${LIST:-/proc/${$}/fd/0}"

@@ -11,8 +11,9 @@ OPTIONS:
    -b DIR [Required] Dir where bam files will be written
    -s DIR [Required] Dir with personal genomes or file to align against if -r is set.
    -l STR List of samples (sample indiv fq1 fq2). If not provided, it will read from STDIN. This is a file, where each line is (sample indiv fq1 fq2).
+   -i STR source file
    -c     Overwrite [0]
-   -r     Align to reference [0]
+   -r     Align to reference [0] - not currently supported
 EOF
 }
 
@@ -22,7 +23,7 @@ FQDIR=
 BAMDIR=
 LIST=
 SEQDIR=
-while getopts "hf:b:l:crs:" opt
+while getopts "hf:b:l:i:crs:" opt
 do
     case $opt in
 	h)
@@ -33,6 +34,8 @@ do
 	    BAMDIR=$OPTARG;;
 	l)
 	    LIST=$OPTARG;;
+	i) 
+	    SFILE=$OPTARG;;
 	c) 
 	    CLEAN='-c';;
 	r) 
@@ -66,16 +69,10 @@ if [[ $TOREF -eq 1 ]]; then
 fi
 echo $SEQDIR
 
-
-CODE_DIR=/srv/gsfs0/projects/kundaje/users/oursu/code/personalGenomeAlignment/new_ase_code/ase
+source ${SFILE}
 while read -r sample indiv fq1 fq2; do
-    sample=${sample^^} # This will convert to uppercase
-    indiv=${indiv^^}
-    #if [[ "$indiv" =~ ^[0-9]+$ ]]; then # Correct HapMap names
-    #	indiv="GM"$indiv
-    #	sample="GM"$sample
-    #fi
-    #sample="SNYDER_HG19_${sample}"
+    #sample=${sample^^} # This will convert to uppercase
+    #indiv=${indiv^^}
     if [[ $TOREF -eq 0 ]]; then
 	seqpref=${SEQDIR}/${indiv}
 	if [[ ! -f ${seqpref}.maternal.fa || ! -f ${seqpref}.paternal.fa ]]; then
@@ -98,17 +95,16 @@ while read -r sample indiv fq1 fq2; do
 	    for par in 'maternal' 'paternal'; do
 		echo ${CLEAN}
 		if [[ $CLEAN == '-c' || ! -f ${BAMDIR}/${sample}_${par}.bam ]]; then
-		    echo ${CODE_DIR}/bin/alignSample.sh --fq1 $fqfile1 --fq2 $fqfile2 --bamdir $BAMDIR --seqpref ${seqpref}.${par} --sample ${sample}_${par} $CLEAN > ${BAMDIR}/${sample}_${par}_align_script.sh
+		    echo ${CODEDIR}new_ase_code/bin/alignSample.sh --fq1 $fqfile1 --fq2 $fqfile2 --bamdir $BAMDIR --seqpref ${seqpref}.${par} --sample ${sample}_${par} --sfile ${SFILE} $CLEAN > ${BAMDIR}/${sample}_${par}_align_script.sh
 		    chmod 711 ${BAMDIR}/${sample}_${par}_align_script.sh
 		    qsub -l mem_free=20G -l h_vmem=20G -l h_rt=20:00:00 -e ${BAMDIR}/${sample}_${par}_align.err ${BAMDIR}/${sample}_${par}_align_script.sh
-		    #bsub -J ${sample}_${par} -o /dev/null -eo ${BAMDIR}/${sample}_${par}_align.err -n 4 -q research-rh6 -W 96:00 -M 12288 -R "rusage[mem=12288]" "${MAYAROOT}/src/bin/alignSample.sh --fq1 $fqfile1 --fq2 $fqfile2 --bamdir $BAMDIR --seqpref ${seqpref}.${par} --sample ${sample}_${par} $CLEAN"
-		#else
-		#    echo "Skipping ${sample}_${par}. Output file exists" 1>&2
+		else
+		    echo "Skipping ${sample}_${par}. Output file exists" 1>&2
 		fi
 	    done
 	else
 	    if [[ $CLEAN == '-c' || ! -f ${BAMDIR}/dedup/${sample}_dedup.bam ]]; then
-		echo "Noting for now"
+		echo "Not currently supporting mapping to reference"
 		#bsub -J ${sample} -o /dev/null -eo ${BAMDIR}/${sample}_align.err -n 4 -q research-rh6 -W 96:00 -M 12288 -R "rusage[mem=12288]" "${MAYAROOT}/src/bin/alignSample.sh --fq1 $fqfile1 --fq2 $fqfile2 --bamdir $BAMDIR --seqpref ${SEQDIR} --sample ${sample} $CLEAN -p"
 	    else
 		echo "Skipping ${sample}. Output file exists" 1>&2
