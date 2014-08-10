@@ -1,8 +1,19 @@
 Code for mapping to personal genomes from the chromatin variation project (Kasowski et al. 2013). 
 
-Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster)
+Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster.
 
-new_ase_code/ase/bin
+An example for how to run the code is found in testFiles/testRun.sh
+
+
+
+
+
+
+
+
+
+
+new_ase_code/bin
 Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
 generation, QC etc). In many cases there's two scripts with similar names (eg. alignSample.sh and
 alignBatch.sh). In these cases, the "Sample" script does the actual work. The "Batch" script reads
