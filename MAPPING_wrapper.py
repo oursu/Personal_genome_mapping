@@ -22,7 +22,7 @@ def main():
     parser.add_option('--BowtieIndex',dest='BowtieIndex',action='store_true')
     parser.add_option('--gtf',dest='gtf',default='NA')
     parser.add_option('--trpref',dest='trpref',default='NA')
-    parser.add_option('--chromo',dest='chromo',action='store_true')
+    parser.add_option('--chromo',dest='chromo',action='store_true',help='Whether to add "chr" in front of the vcf entries, so that they match the fasta files you are using')
     parser.add_option('--RNAnoveljuncs',dest='noveljuncs',action='store_true', help='set this if you want tophat run for RNA to include novel junctions.')
     opts,args=parser.parse_args()
     
