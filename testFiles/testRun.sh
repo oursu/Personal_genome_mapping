@@ -17,7 +17,7 @@ make
 
 #TEST FILES ======================================================================================
 #Here are some test files to check that personal genome mapping works correctly.
-#We will work with NA19099, vcf from 1000Genomes, and a small fasta file of 1M reads, PE.
+#We will work with NA19099, vcf from 1000Genomes, and a small fasta file of 250 reads, PE.
 #H3K27AC Rep1 from "Extensive variation in chromatin states"
 CODEDIR=/srv/gsfs0/projects/kundaje/users/oursu/code/git_things/Personal_genome_mapping
 TESTDIR=${CODEDIR}/testFiles

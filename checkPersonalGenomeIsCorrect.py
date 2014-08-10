@@ -16,6 +16,7 @@ def main():
     parser.add_option('--fasta_1m',dest='fa_1m',help='Fasta file 1 of things to compare, maternal genome')
     parser.add_option('--fasta_1p',dest='fa_1p',help='Fasta file 1 of things to compare, paternal genome')
     parser.add_option('--out',dest='out',help='Out')
+    parser.add_option('--chrom',dest='chrom',action='store_true',help='Add "chr" to vcf')
     parser.add_option('--vcf',dest='vcf',help='vcf file with positions of interest')
     parser.add_option('--paternal_only',dest='p_only',help='Check paternal only',action='store_true',default=False)
     parser.add_option('--maternal_only',dest='m_only',help='Check maternal only',action='store_true',default=False)
@@ -23,6 +24,9 @@ def main():
 
     vcf=open(opts.vcf)
 
+    chromoadd=''
+    if opts.chrom==True:
+        chromoadd='chr'
     if opts.m_only==True:
         print 'maternal only'
         fa1m=pysam.Fastafile(opts.fa_1m)
@@ -55,7 +59,7 @@ def main():
             print 'not enough entries'
             print items
             continue
-        chromo=items[0]
+        chromo=chromoadd+items[0]
         #Understand the genotype from vcf
         alleles=[items[3],items[4]]
         individual_value=items[individual_column]

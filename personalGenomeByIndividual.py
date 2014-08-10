@@ -51,7 +51,7 @@ def main():
     if opts.gender=='female':
         addSNP_cmd=addSNP_cmd+' -f '
     if opts.addSNP:
-        check_genome='/srv/gs1/software/python/2.7/bin/python'+' '+opts.code_path+'checkPersonalGenomeIsCorrect.py --fasta_1m '+individual_prefix+'.maternal.fa'+' --fasta_1p '+individual_prefix+'.paternal.fa'+' --out '+individual_prefix+'_GenomeCorrect'+' --vcf '+opts.vcf+' --indiv '+opts.indiv
+        check_genome='/srv/gs1/software/python/2.7/bin/python'+' '+opts.code_path+'checkPersonalGenomeIsCorrect.py --fasta_1m '+individual_prefix+'.maternal.fa'+' --fasta_1p '+individual_prefix+'.paternal.fa'+' --out '+individual_prefix+'_GenomeCorrect'+' --vcf '+opts.vcf+' --indiv '+opts.indiv+chromoadd
         total_cmds.append(addSNP_cmd)
         #make fai files
         #check genome correct
