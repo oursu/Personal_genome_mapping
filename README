@@ -1,9 +1,36 @@
-Code for mapping to personal genomes from the chromatin variation project (Kasowski et al. 2013). 
+Code for mapping DNA (with BWA) and RNA (with Tophat) to personal genomes from the chromatin variation project (Kasowski et al., 2013). 
+Forked from sofiakp/ase.
 
-Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster.
+Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster).
 
-An example for how to run the code is found in testFiles/testRun.sh
+INSTALLATION
+============
 
+1. Define the CODEDIR variable to be the directory where you have cloned the code.
+2. Setup ase code
+
+- Load modules boost and cmake
+For instance, for scg3, do the following 2 commands:
+module add boost/1.51.0
+module add cmake/2.8.11.2
+
+- then configure and make
+cd ${CODEDIR}/new_ase_code/ase_cpp
+chmod 711 configure.sh
+./configure.sh
+make
+
+Now you have just installed the ase code. Congratulations!
+
+RUNNING CODE
+============
+
+An example for how to run the code, and what files are required is found in testFiles/testRun.sh
+The code can be run by calling the main function, MAPPING_wrapper.py. To see a list of required arguments, type:
+python ${CODEDIR}/MAPPING_wrapper.py -h
+
+Information from original package:
+=================================
 new_ase_code/bin
 Mostly preprocessing stuff (alignment/cleaning up of reads, peak calling, signal track
 generation, QC etc). In many cases there's two scripts with similar names (eg. alignSample.sh and
