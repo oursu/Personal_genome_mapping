@@ -6,8 +6,14 @@ Main update: Code now works on the scg3 cluster (i.e. on an sge-based cluster).
 INSTALLATION
 ============
 
-1. Define the CODEDIR variable to be the directory where you have cloned the code.
-2. Setup ase code
+1. Get the code. Assume you want the code to be placed in a directory called mappingDir.
+cd mappingDir
+git clone https://github.com/oursu/Personal_genome_mapping
+
+2. Define the CODEDIR variable to be the directory where you have cloned the code (use full paths).
+CODEDIR=mappingDir/Personal_genome_mapping/
+
+3. Setup ase code
 
 - Load modules boost and cmake
 For instance, for scg3, do the following 2 commands:
@@ -20,7 +26,11 @@ chmod 711 configure.sh
 ./configure.sh
 make
 
-Now you have just installed the ase code. Congratulations!
+4. Modify the bashrc file, to point the code to samtools and other relevant packages used here.
+The file to modify is:
+${CODEDIR}/Personal_genome_mapping/personal_genome_mapping.bashrc 
+
+Congratulations. You are now ready to map to personal genomes!
 
 RUNNING CODE
 ============
