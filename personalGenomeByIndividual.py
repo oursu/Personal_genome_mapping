@@ -11,7 +11,7 @@ def main():
     parser=OptionParser()
     
     parser.add_option('--python_path',dest='python_path',help='Python path. DEFAULT=/srv/gsfs0/projects/kundaje/users/oursu/code/python_2.7.6',
-                      default='/srv/gsfs0/projects/kundaje/users/oursu/code/python_2.7.6')
+                      default='/broad/software/free/Linux/redhat_6_x86_64/pkgs/python_2.6.6/bin/python')
     parser.add_option('--code_path',dest='code_path',help='Code path.')
     parser.add_option('--addSNPtoFa',dest='addSNP',action='store_true')
     parser.add_option('--BWAindex',dest='BWAindex',action='store_true')

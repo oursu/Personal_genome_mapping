@@ -1,7 +1,7 @@
 
 #INSTALLATION ==========================
 #### USER MUST CHANGE: Change CODEDIR below to be the directory where you have cloned the code.
-CODEDIR=/srv/gsfs0/projects/kundaje/users/oursu/code/git_things/Personal_genome_mapping
+CODEDIR=/ahg/regevdata/projects/Glioma_scGenetics/tools/mappingDir/Personal_genome_mapping
 #Setup ase code
 #Load modules boost and cmake
 #For scg3 uncomment the following 2 lines
@@ -19,7 +19,7 @@ make
 #Here are some test files to check that personal genome mapping works correctly.
 #We will work with NA19099, vcf from 1000Genomes, and a small fasta file of 250 reads, PE.
 #H3K27AC Rep1 from "Extensive variation in chromatin states"
-CODEDIR=/srv/gsfs0/projects/kundaje/users/oursu/code/git_things/Personal_genome_mapping
+CODEDIR=/ahg/regevdata/projects/Glioma_scGenetics/tools/mappingDir/Personal_genome_mapping
 TESTDIR=${CODEDIR}/testFiles
 datadir=${TESTDIR}/data
 
@@ -40,16 +40,17 @@ echo "test" | awk -v afq1=$fq1 -v afq2=$fq2 -v gpath=${genomedir} -v avcf=$vcf -
 
 #scg3 specific but you can set your own.
 #directory with fasta files, one per chromosome
-fadir=/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/
+fadir=/seq/regev_genome_portal/RESOURCES/human/Hg19/
 #A file with chr, and chr size as the first 2 columns
-genomedict=/srv/gs1/projects/kundaje/oursu/Alignment/data/ENCODE_genomes/male/ref.fa.fai
+genomedict=/seq/regev_genome_portal/RESOURCES/human/Hg19/Hg19.fa.fai
 
 
 #---------------------------------------------------------------------
 #--------------------------- TEST RUN --------------------------------
 #---------------------------------------------------------------------
 #1. ======== Personal genome construction ========
-python ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forTophat --step_to_perform createGenome --fadir_male ${fadir} --genome_dict_male ${genomedict} --BWAindex --BowtieIndex --chromo
+source ${CODEDIR}/personal_genome_mapping.bashrc
+${python276} ${CODEDIR}/MAPPING_wrapper.py --bashrc_file ${CODEDIR}/personal_genome_mapping.bashrc --code_path ${CODEDIR}/ --metadata ${metadata}.forTophat --step_to_perform createGenome --fadir_male ${fadir} --genome_dict_male ${genomedict} --BWAindex --BowtieIndex --chromo
 
 #2. ========= RNA mapping =========
 #Align with Tophat to the personal genome (indexed in the previous step).

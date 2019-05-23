@@ -2,7 +2,7 @@ from optparse import OptionParser
 import os,re
 import math
 from time import gmtime, strftime
-
+import sys
 '''
 Mapping wrapper
 Call the pipeline for mapping to personal genomes.
@@ -132,8 +132,10 @@ def main():
                 sys.exit('No alignment directory provided for '+sample_name+'. Exiting ..')
             alignment_prefix=sample_di[sample_name]['alignment_directory']+sample_di[sample_name]['sample_name']
             #Make sure genome exists
+            print sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual'].split('-')[0]+'.maternal.bwt'
             if os.path.isfile(sample_di[sample_name]['genome_path']+'/'+sample_di[sample_name]['individual'].split('-')[0]+'.maternal.bwt'):
                 #First, make the file required for alignBatch.sh
+                print 'here'
                 info_file=sample_di[sample_name]['alignment_directory']+'info_'+sample_di[sample_name]['sample_name']
                 make_info='echo '+sample_di[sample_name]['sample_name']+' '+sample_di[sample_name]['individual'].split('-')[0]+' '+os.path.basename(sample_di[sample_name]['fastq1'])+' '+os.path.basename(sample_di[sample_name]['fastq2'])+' > '+info_file
                 os.system(make_info)

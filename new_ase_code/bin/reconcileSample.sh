@@ -80,18 +80,18 @@ if [[ $CLEAN -eq 1 || ! -f ${outpref}.bam ]]; then
     #${ASE_CODE} reconcile rg1=paternal rg2=maternal $PAIRED ${inpref}_paternal.bam ${inpref}_maternal.bam ${tmppref}.bam > ${outpref}.out
     num=`samtools view ${tmppref}.bam | head -1 | egrep "_[12]:N:0:[ACGT]+" | wc -l`
     if [[ $num -gt 0 ]]; then
-	samtools view -h ${tmppref}.bam | sed -r 's/_[12]:N:0:[ACGT]+//' | samtools view -Sb - | samtools sort -m 2000000000 - ${outpref}
+	samtools view -h ${tmppref}.bam | sed -r 's/_[12]:N:0:[ACGT]+//' | samtools view -Sb - | samtools sort -m 2000000000 -o ${outpref}.bam -
     else
-	samtools sort -m 2000000000 ${tmppref}.bam ${outpref}
+	samtools sort -m 2000000000 -o ${outpref}.bam ${tmppref}.bam
     fi
     samtools index ${outpref}.bam
 fi
 
 if [[ $CLEAN -eq 1 || ! -f ${dedpref}.bam ]]; then
     echo "Removing duplicates..." 1>&2;
-    ${MARKDUPLICATESCMD}  I=${outpref}.bam O=${dedpref}.bam M=${dedpref}.stats AS=true TMP_DIR=${tmpdir} VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=1000000 REMOVE_DUPLICATES=true
+    #${MARKDUPLICATESCMD}  I=${outpref}.bam O=${dedpref}.bam M=${dedpref}.stats AS=true TMP_DIR=${tmpdir} VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=1000000 REMOVE_DUPLICATES=true
     #/usr/java/latest/bin/java -Xmx2G -jar /home/oursu/devtools/picard-tools-1.105/MarkDuplicates.jar I=${outpref}.bam O=${dedpref}.bam M=${dedpref}.stats AS=true TMP_DIR=${tmpdir} VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=1000000 REMOVE_DUPLICATES=true
-    samtools index ${dedpref}.bam
+    #samtools index ${dedpref}.bam
 fi
 
 #
